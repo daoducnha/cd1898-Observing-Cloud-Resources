@@ -1,0 +1,26 @@
+aws eks --region us-east-1  update-kubeconfig --name udacity-cluster
+
+kubectl create ns monitoring
+helm -n monitoring uninstall prometheus
+helm -n monitoring uninstall prometheus-blackbox-exporter
+
+kubectl -n monitoring delete secret additional-scrape-configs
+kubectl -n monitoring create secret generic additional-scrape-configs --from-file=prometheus-additional.yaml
+
+helm install prometheus prometheus-community/kube-prometheus-stack -f values.yaml --namespace monitoring --debug
+helm install prometheus-blackbox-exporter -f blackbox-values.yaml  prometheus-community/prometheus-blackbox-exporter -n monitoring 
+
+helm -n monitoring list
+
+
+kubectl -n monitoring port-forward service/prometheus-grafana 8080:80
+
+kubectl -n monitoring get pod
+
+kubectl -n monitoring  describe pod prometheus-prometheus-kube-prometheus-prometheus-0
+
+sudo systemctl status node_exporter
+
+
+
+ssh -i "udacity.pem" ubuntu@ec2-44-208-34-159.compute-1.amazonaws.com
